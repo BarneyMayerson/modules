@@ -3,7 +3,7 @@
 use Modules\Product\Models\Product;
 
 it('creates a product', function() {
-    $product = new Product();
+    $product = Product::factory()->create();
 
     $this->assertTrue(true);
 });
