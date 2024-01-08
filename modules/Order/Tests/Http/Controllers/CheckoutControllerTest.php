@@ -50,6 +50,11 @@ it('succesfully creates an order', function() {
         $this->assertEquals($product->price_in_cents, $orderLine->product_price_in_cents);
         $this->assertEquals(1, $orderLine->quantity);
     }
+
+    $products = $products->fresh();
+
+    $this->assertEquals(9, $products->first()->stock);
+    $this->assertEquals(9, $products->last()->stock);
 });
 
 it('fails with an invalid token', function() {

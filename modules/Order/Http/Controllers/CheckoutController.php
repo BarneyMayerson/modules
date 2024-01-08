@@ -43,6 +43,8 @@ class CheckoutController
         ]);
 
         foreach ($products as $product) {
+            $product['product']->decrement('stock', $product['quantity']);
+
             $order->lines()->create([
                 'product_id' => $product['product']->id,
                 'product_price_in_cents' => $product['product']->price_in_cents,
