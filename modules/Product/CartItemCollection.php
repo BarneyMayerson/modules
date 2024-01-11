@@ -14,14 +14,21 @@ class CartItemCollection
     {
     }
 
-    public static function fromCheckoutData($data): CartItemCollection
+    public static function fromCheckoutData(array $data): CartItemCollection
     {
-        $items = collect($data)->map(function(array $productDetails) {
+        $cartData = collect($data);
+        $products = Product::whereIn('id', $cartData->pluck('id'))->get();
+
+        $cartItems = $products->map(function(Product $productModel) use ($cartData) {
+            $cartItem = $cartData->where('id', $productModel->id)->first();
+
             return new CartItem(
-                ProductDto::fromEloquentModel(Product::find($productDetails['id'])), $productDetails['quantity']);
+                ProductDto::fromEloquentModel($productModel),
+                $cartItem['quantity']
+            );
         });
 
-        return new self($items); 
+        return new self($cartItems);
     }
 
     public function totalInCents(): int
