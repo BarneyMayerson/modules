@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Response;
 use Modules\Order\Models\Order;
 use Modules\Payment\PayBuddy;
+use Modules\Payment\Payment;
 use Modules\Product\Database\Factories\ProductFactory;
 
 use function Pest\Laravel\actingAs;
@@ -36,12 +37,19 @@ it('succesfully creates an order', function() {
 
     $order = Order::query()->latest('id')->first();
 
+    // order
     $this->assertTrue($order->user->is($user));
     $this->assertEquals(60000, $order->total_in_cents);
-    $this->assertEquals('paid', $order->status);
-    $this->assertEquals('PayBuddy', $order->payment_gateway);
-    $this->assertEquals(36, strlen($order->payment_id));
-    $this->assertCount(2, $order->lines);
+    $this->assertEquals('completed', $order->status);
+    
+    // payment
+    /** @var Payment $payment */
+    $payment = $order->lastPayment;
+    $this->assertEquals('paid', $payment->status);
+    $this->assertEquals('PayBuddy', $payment->payment_gateway);
+    $this->assertEquals(36, strlen($payment->payment_id));
+    $this->assertEquals(60000, $payment->total_in_cents);
+    $this->assertTrue($payment->user->is($user));
 
     foreach ($products as $product) {
         /** @var \Modules\Order\Models\OrderLine $orderLine */
