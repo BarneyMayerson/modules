@@ -8,8 +8,6 @@ use Modules\Payment\PayBuddy;
 use Modules\Payment\Payment;
 use Modules\Product\Database\Factories\ProductFactory;
 
-use function Pest\Laravel\actingAs;
-
 it('succesfully creates an order', function() {
     $this->assertTrue(true);
 
