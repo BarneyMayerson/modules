@@ -11,9 +11,9 @@ class OrderLine extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'order_id' => 'integer',
-        'product_id' => 'integer',
-        'product_price_in_cents' => 'integer',
-        'quantity' => 'integer',
+        "order_id" => "integer",
+        "product_id" => "integer",
+        "product_price_in_cents" => "integer",
+        "quantity" => "integer",
     ];
 }

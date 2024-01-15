@@ -5,20 +5,28 @@ namespace Modules\Payment;
 use Illuminate\Support\Str;
 use NumberFormatter;
 
-class PayBuddy 
+class PayBuddy
 {
-    public function charge(string $token, int $amountInCents, string $statmentDescription): array
-    {
+    public function charge(
+        string $token,
+        int $amountInCents,
+        string $statmentDescription
+    ): array {
         $this->validateToken($token);
 
-        $numberFormatter = new NumberFormatter('en-US', NumberFormatter::CURRENCY);
+        $numberFormatter = new NumberFormatter(
+            "en-US",
+            NumberFormatter::CURRENCY
+        );
 
         return [
-            'id' => (string)Str::uuid(),
-            'amount_in_cents' => $amountInCents,
-            'localized_amount' => $numberFormatter->format($amountInCents / 100),
-            'statmentDescription' => $statmentDescription,
-            'created_at' => now()->toDateTimeString(),
+            "id" => (string) Str::uuid(),
+            "amount_in_cents" => $amountInCents,
+            "localized_amount" => $numberFormatter->format(
+                $amountInCents / 100
+            ),
+            "statmentDescription" => $statmentDescription,
+            "created_at" => now()->toDateTimeString(),
         ];
     }
 
@@ -27,12 +35,12 @@ class PayBuddy
         return new self();
     }
 
-    public static function validToken():string
+    public static function validToken(): string
     {
-        return (string)Str::uuid();
+        return (string) Str::uuid();
     }
 
-    public static function invalidToken():string
+    public static function invalidToken(): string
     {
         return substr(self::validToken(), -35);
     }
@@ -45,8 +53,10 @@ class PayBuddy
      */
     protected function validateToken(string $token): void
     {
-        if (! Str::isUuid($token)) {
-            throw new \RuntimeException('The given payment token is not valid.');
+        if (!Str::isUuid($token)) {
+            throw new \RuntimeException(
+                "The given payment token is not valid."
+            );
         }
     }
 }

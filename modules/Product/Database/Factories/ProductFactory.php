@@ -11,7 +11,7 @@ use Modules\Product\Models\Product;
 class ProductFactory extends Factory
 {
     protected $model = Product::class;
-    
+
     /**
      * Define the model's default state.
      *
@@ -20,9 +20,9 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->sentence(),
-            'price_in_cents' => random_int(100, 10000),
-            'stock' => random_int(1, 10),
+            "name" => $this->faker->sentence(),
+            "price_in_cents" => random_int(100, 10000),
+            "stock" => random_int(1, 10),
         ];
     }
 }

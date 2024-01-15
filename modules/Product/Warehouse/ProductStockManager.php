@@ -8,6 +8,8 @@ class ProductStockManager
 {
     public function decrement(int $productId, int $amount): void
     {
-        Product::query()->find($productId)?->decrement('stock', $amount);
+        Product::query()
+            ->find($productId)
+            ?->decrement("stock", $amount);
     }
 }

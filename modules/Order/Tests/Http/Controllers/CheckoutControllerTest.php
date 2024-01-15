@@ -8,57 +8,68 @@ use Modules\Payment\PayBuddy;
 use Modules\Payment\Payment;
 use Modules\Product\Database\Factories\ProductFactory;
 
-it('succesfully creates an order', function() {
+it("succesfully creates an order", function () {
     $this->assertTrue(true);
 
     $user = UserFactory::new()->create();
 
-    $products = ProductFactory::new()->count(2)->create(
-        new Sequence(
-            ['name' => 'Very expensive air fryer', 'price_in_cents' => 10000, 'stock' => 10],
-            ['name' => 'Macbook Pro 5', 'price_in_cents' => 50000, 'stock' => 10],
-        )
-    );
+    $products = ProductFactory::new()
+        ->count(2)
+        ->create(
+            new Sequence(
+                [
+                    "name" => "Very expensive air fryer",
+                    "price_in_cents" => 10000,
+                    "stock" => 10,
+                ],
+                [
+                    "name" => "Macbook Pro 5",
+                    "price_in_cents" => 50000,
+                    "stock" => 10,
+                ]
+            )
+        );
 
     $paymentToken = PayBuddy::validToken();
 
-    $response = $this->actingAs($user)
-        ->post(route('order::checkout'), [
-            'payment_token' =>$paymentToken,
-            'products' => [
-                ['id' => $products->first()->id, 'quantity' => 1],
-                ['id' => $products->last()->id, 'quantity' => 1],
-            ],
-        ]);
+    $response = $this->actingAs($user)->post(route("order::checkout"), [
+        "payment_token" => $paymentToken,
+        "products" => [
+            ["id" => $products->first()->id, "quantity" => 1],
+            ["id" => $products->last()->id, "quantity" => 1],
+        ],
+    ]);
 
-    $order = Order::query()->latest('id')->first();
- 
-    $response
-        ->assertStatus(Response::HTTP_CREATED)
-        ->assertJson([
-            'order_url' => $order->url(),
-        ]);
+    $order = Order::query()
+        ->latest("id")
+        ->first();
 
+    $response->assertStatus(Response::HTTP_CREATED)->assertJson([
+        "order_url" => $order->url(),
+    ]);
 
     // order
     $this->assertTrue($order->user->is($user));
     $this->assertEquals(60000, $order->total_in_cents);
-    $this->assertEquals('completed', $order->status);
-    
+    $this->assertEquals("completed", $order->status);
+
     // payment
     /** @var Payment $payment */
     $payment = $order->lastPayment;
-    $this->assertEquals('paid', $payment->status);
-    $this->assertEquals('PayBuddy', $payment->payment_gateway);
+    $this->assertEquals("paid", $payment->status);
+    $this->assertEquals("PayBuddy", $payment->payment_gateway);
     $this->assertEquals(36, strlen($payment->payment_id));
     $this->assertEquals(60000, $payment->total_in_cents);
     $this->assertTrue($payment->user->is($user));
 
     foreach ($products as $product) {
         /** @var \Modules\Order\Models\OrderLine $orderLine */
-        $orderLine = $order->lines->where('product_id', $product->id)->first();
+        $orderLine = $order->lines->where("product_id", $product->id)->first();
 
-        $this->assertEquals($product->price_in_cents, $orderLine->product_price_in_cents);
+        $this->assertEquals(
+            $product->price_in_cents,
+            $orderLine->product_price_in_cents
+        );
         $this->assertEquals(1, $orderLine->quantity);
     }
 
@@ -68,20 +79,17 @@ it('succesfully creates an order', function() {
     $this->assertEquals(9, $products->last()->stock);
 });
 
-it('fails with an invalid token', function() {
+it("fails with an invalid token", function () {
     $user = UserFactory::new()->create();
     $product = ProductFactory::new()->create();
     $paymentToken = PayBuddy::invalidToken();
 
-    $response = $this->actingAs($user)
-        ->postJson(route('order::checkout'), [
-            'payment_token' => $paymentToken,
-            'products' => [
-                ['id' => $product->id, 'quantity' => 1],
-            ],
-        ]);
+    $response = $this->actingAs($user)->postJson(route("order::checkout"), [
+        "payment_token" => $paymentToken,
+        "products" => [["id" => $product->id, "quantity" => 1]],
+    ]);
 
     $response
         ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-        ->assertJsonValidationErrors(['payment_token']);
+        ->assertJsonValidationErrors(["payment_token"]);
 });

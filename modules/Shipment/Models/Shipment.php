@@ -9,9 +9,5 @@ class Shipment extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'order_id',
-        'provider',
-        'provider_shipment_id',
-    ];
+    protected $fillable = ["order_id", "provider", "provider_shipment_id"];
 }

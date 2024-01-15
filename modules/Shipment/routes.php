@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('shipment-test', fn() => 'Hello Shipment Test');
+Route::get("shipment-test", fn() => "Hello Shipment Test");

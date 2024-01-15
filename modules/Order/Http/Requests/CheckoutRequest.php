@@ -14,10 +14,10 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_token' => 'required|string',
-            'products' => 'required|array',
-            'products.*.id' => 'required|numeric',
-            'products.*.quantity' => 'required|numeric',
+            "payment_token" => "required|string",
+            "products" => "required|array",
+            "products.*.id" => "required|numeric",
+            "products.*.quantity" => "required|numeric",
         ];
     }
 }

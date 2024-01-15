@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'max_item' => 10,
-]; 
+    "max_item" => 10,
+];

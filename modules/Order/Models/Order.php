@@ -17,8 +17,8 @@ class Order extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'user_id' => 'integer',
-        'total_in_cents' => 'integer',
+        "user_id" => "integer",
+        "total_in_cents" => "integer",
     ];
 
     public function user(): BelongsTo
@@ -38,11 +38,13 @@ class Order extends Model
 
     public function lastPayment(): HasOne
     {
-        return $this->payments()->one()->latest();
+        return $this->payments()
+            ->one()
+            ->latest();
     }
 
     public function url(): string
     {
-        return route('order.show', $this);
+        return route("order.show", $this);
     }
 }
