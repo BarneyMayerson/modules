@@ -31,9 +31,14 @@ it('succesfully creates an order', function() {
             ],
         ]);
 
-    $response->assertStatus(Response::HTTP_CREATED);
-
     $order = Order::query()->latest('id')->first();
+ 
+    $response
+        ->assertStatus(Response::HTTP_CREATED)
+        ->assertJson([
+            'order_url' => $order->url(),
+        ]);
+
 
     // order
     $this->assertTrue($order->user->is($user));

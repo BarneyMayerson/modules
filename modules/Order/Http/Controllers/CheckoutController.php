@@ -5,6 +5,7 @@ namespace Modules\Order\Http\Controllers;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Modules\Order\Actions\PurchaseItems;
+use Modules\Order\Exceptions\PaymentFailedException;
 use Modules\Order\Http\Requests\CheckoutRequest;
 use Modules\Order\Models\Order;
 use Modules\Payment\PayBuddy;
@@ -21,14 +22,21 @@ class CheckoutController
     {
         $cartItems = CartItemCollection::fromCheckoutData($request->input('products'));
 
-        $this->purchaseItems->handle(
-            $cartItems, 
-            PayBuddy::make(), 
-            $request->input('payment_token'),
-            $request->user()->id
-        );
+        try {
+            $order = $this->purchaseItems->handle(
+                $cartItems, 
+                PayBuddy::make(), 
+                $request->input('payment_token'),
+                $request->user()->id
+            );
+        } catch (PaymentFailedException) {
+            throw ValidationException::withMessages([
+                'payment_token' => 'We could not complete your payment.'
+            ]);
+        }
 
-        
-        return response()->json([], Response::HTTP_CREATED);
+        return response()->json([
+            'order_url' => $order->url(),
+        ], Response::HTTP_CREATED);
     }
 }

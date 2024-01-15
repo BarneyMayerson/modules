@@ -4,6 +4,7 @@ namespace Modules\Order\Actions;
 
 use Illuminate\Validation\ValidationException;
 use Modules\Order\Models\Order;
+use Modules\Order\Exceptions\PaymentFailedException;
 use Modules\Payment\PayBuddy;
 use Modules\Product\CartItemCollection;
 use Modules\Product\Warehouse\ProductStockManager;
@@ -21,16 +22,14 @@ class PurchaseItems
         PayBuddy $paymentProvider, 
         string $paymentToken,
         int $userId
-    ): void
+    ): Order
     {
         $orderTotalInCents = $items->totalInCents();
 
         try {
             $charge = $paymentProvider->charge($paymentToken, $orderTotalInCents, 'Modularization');
         } catch(RuntimeException) {
-            throw ValidationException::withMessages([
-                'payment_token' => 'We could not complete your payment.'
-            ]);
+            throw PaymentFailedException::dueToInvalidToken();
         }
 
         $order = Order::query()->create([
@@ -59,5 +58,6 @@ class PurchaseItems
             'user_id' => $userId,
         ]);
 
+        return $order;
     }
 }
