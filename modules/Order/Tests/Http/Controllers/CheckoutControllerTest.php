@@ -94,5 +94,5 @@ it("fails with an invalid token", function () {
         ->assertJsonValidationErrors(["payment_token"]);
 
     $this->assertEquals(0, $user->orders()->count());
-    $this->assertEquals(0, Orders::query()->count());
+    $this->assertEquals(0, Order::query()->count());
 });

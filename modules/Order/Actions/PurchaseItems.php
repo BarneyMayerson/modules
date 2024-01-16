@@ -2,6 +2,7 @@
 
 namespace Modules\Order\Actions;
 
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Validation\ValidationException;
 use Modules\Order\Models\Order;
 use Modules\Payment\Actions\CreatePaymentForOrder;
@@ -14,7 +15,8 @@ class PurchaseItems
 {
     public function __construct(
         protected ProductStockManager $productStockManager,
-        protected CreatePaymentForOrder $createPaymentForOrder
+        protected CreatePaymentForOrder $createPaymentForOrder,
+        protected DatabaseManager $databaseManager
     ) {
     }
 
@@ -26,33 +28,42 @@ class PurchaseItems
     ): Order {
         $orderTotalInCents = $items->totalInCents();
 
-        $order = Order::query()->create([
-            "status" => "completed",
-            "total_in_cents" => $orderTotalInCents,
-            "user_id" => $userId,
-        ]);
-
-        foreach ($items->items() as $cartItem) {
-            $this->productStockManager->decrement(
-                $cartItem->product->id,
-                $cartItem->quantity
-            );
-
-            $order->lines()->create([
-                "product_id" => $cartItem->product->id,
-                "product_price_in_cents" => $cartItem->product->priceInCents,
-                "quantity" => $cartItem->quantity,
-            ]);
-        }
-
-        $this->createPaymentForOrder->handle(
-            $order->id,
+        return $this->databaseManager->transaction(function () use (
             $userId,
             $orderTotalInCents,
+            $items,
             $paymentProvider,
             $paymentToken
-        );
+        ) {
+            $order = Order::query()->create([
+                "status" => "completed",
+                "total_in_cents" => $orderTotalInCents,
+                "user_id" => $userId,
+            ]);
 
-        return $order;
+            foreach ($items->items() as $cartItem) {
+                $this->productStockManager->decrement(
+                    $cartItem->product->id,
+                    $cartItem->quantity
+                );
+
+                $order->lines()->create([
+                    "product_id" => $cartItem->product->id,
+                    "product_price_in_cents" =>
+                        $cartItem->product->priceInCents,
+                    "quantity" => $cartItem->quantity,
+                ]);
+            }
+
+            $this->createPaymentForOrder->handle(
+                $order->id,
+                $userId,
+                $orderTotalInCents,
+                $paymentProvider,
+                $paymentToken
+            );
+
+            return $order;
+        });
     }
 }
