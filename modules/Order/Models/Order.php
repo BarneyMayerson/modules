@@ -8,11 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Order\Exceptions\OrderMissingOrderLinesException;
+use Modules\Order\Models\OrderLine;
 use Modules\Payment\Payment;
+use Modules\Product\CartItem;
+use Modules\Product\CartItemCollection;
 
 class Order extends Model
 {
     use HasFactory;
+
+    public const COMPLETED = "completed";
+    public const PENDING = "pending";
 
     protected $guarded = [];
 
@@ -46,5 +53,51 @@ class Order extends Model
     public function url(): string
     {
         return route("order.show", $this);
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param CartItemCollection<CartItem> $items
+     * @return void
+     */
+    public function addLinesFromCartItems(CartItemCollection $items): void
+    {
+        foreach ($items->items() as $item) {
+            $this->lines->push(
+                OrderLine::make([
+                    "product_id" => $item->product->id,
+                    "product_price_in_cents" => $item->product->priceInCents,
+                    "quantity" => $item->quantity,
+                ])
+            );
+        }
+
+        $this->total_in_cents = $this->lines->sum(
+            fn(OrderLine $line) => $line->product_price_in_cents
+        );
+    }
+
+    /**
+     * @throws \Modules\Order\Exceptions\OrderMissingOrderLinesException
+     */
+    public function fulfill(): void
+    {
+        if ($this->lines->isEmpty()) {
+            throw new OrderMissingOrderLinesException();
+        }
+
+        $this->status = self::COMPLETED;
+
+        $this->save();
+        $this->lines()->saveMany($this->lines);
+    }
+
+    public static function startForUser(int $userId): self
+    {
+        return self::make([
+            "user_id" => $userId,
+            "status" => self::PENDING,
+        ]);
     }
 }

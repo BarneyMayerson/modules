@@ -9,7 +9,6 @@ use Modules\Payment\Actions\CreatePaymentForOrder;
 use Modules\Payment\PayBuddy;
 use Modules\Product\CartItemCollection;
 use Modules\Product\Warehouse\ProductStockManager;
-use RuntimeException;
 
 class PurchaseItems
 {
@@ -26,39 +25,27 @@ class PurchaseItems
         string $paymentToken,
         int $userId
     ): Order {
-        $orderTotalInCents = $items->totalInCents();
-
         return $this->databaseManager->transaction(function () use (
             $userId,
-            $orderTotalInCents,
             $items,
             $paymentProvider,
             $paymentToken
         ) {
-            $order = Order::query()->create([
-                "status" => "completed",
-                "total_in_cents" => $orderTotalInCents,
-                "user_id" => $userId,
-            ]);
+            $order = Order::startForUser($userId);
+            $order->addLinesFromCartItems($items);
+            $order->fulfill();
 
             foreach ($items->items() as $cartItem) {
                 $this->productStockManager->decrement(
                     $cartItem->product->id,
                     $cartItem->quantity
                 );
-
-                $order->lines()->create([
-                    "product_id" => $cartItem->product->id,
-                    "product_price_in_cents" =>
-                        $cartItem->product->priceInCents,
-                    "quantity" => $cartItem->quantity,
-                ]);
             }
 
             $this->createPaymentForOrder->handle(
                 $order->id,
                 $userId,
-                $orderTotalInCents,
+                $items->totalInCents(),
                 $paymentProvider,
                 $paymentToken
             );
