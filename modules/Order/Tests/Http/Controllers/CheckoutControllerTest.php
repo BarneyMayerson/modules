@@ -3,13 +3,15 @@
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
+use Modules\Order\Mails\OrderReceived;
 use Modules\Order\Models\Order;
 use Modules\Payment\PayBuddy;
 use Modules\Payment\Payment;
 use Modules\Product\Database\Factories\ProductFactory;
 
 it("succesfully creates an order", function () {
-    $this->assertTrue(true);
+    Mail::fake();
 
     $user = UserFactory::new()->create();
 
@@ -47,6 +49,12 @@ it("succesfully creates an order", function () {
     $response->assertStatus(Response::HTTP_CREATED)->assertJson([
         "order_url" => $order->url(),
     ]);
+
+    Mail::assertSent(OrderReceived::class, function (OrderReceived $mail) use (
+        $user
+    ) {
+        return $mail->hasTo($user->email);
+    });
 
     // order
     $this->assertTrue($order->user->is($user));

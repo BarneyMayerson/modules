@@ -55,6 +55,11 @@ class Order extends Model
         return route("order.show", $this);
     }
 
+    public function localizedTotal(): string
+    {
+        return "Total: 12547";
+    }
+
     /**
      * Undocumented function
      *

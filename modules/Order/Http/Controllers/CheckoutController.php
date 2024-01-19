@@ -26,10 +26,11 @@ class CheckoutController
 
         try {
             $order = $this->purchaseItems->handle(
-                $cartItems,
-                PayBuddy::make(),
-                $request->input("payment_token"),
-                $request->user()->id
+                items: $cartItems,
+                paymentProvider: PayBuddy::make(),
+                paymentToken: $request->input("payment_token"),
+                userId: $request->user()->id,
+                userEmail: $request->user()->email
             );
         } catch (PaymentFailedException) {
             throw ValidationException::withMessages([
