@@ -4,6 +4,7 @@ namespace Modules\Order\Actions;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use Modules\Order\DTOs\OrderDto;
 use Modules\Order\DTOs\PendingPayment;
 use Modules\Order\Events\OrderFulfilled;
 use Modules\Order\Models\Order;
@@ -26,7 +27,7 @@ class PurchaseItems
         CartItemCollection $items,
         PendingPayment $pendingPayment,
         UserDto $user
-    ): Order {
+    ): OrderDto {
         $order = $this->databaseManager->transaction(function () use (
             $pendingPayment,
             $user,
@@ -44,19 +45,10 @@ class PurchaseItems
                 paymentToken: $pendingPayment->paymentToken
             );
 
-            return $order;
+            return OrderDto::fromEloquentModel($order);
         });
 
-        $this->events->dispatch(
-            new OrderFulfilled(
-                orderId: $order->id,
-                totalInCents: $order->total_in_cents,
-                localizedTotal: $order->localizedTotal(),
-                cartItems: $items,
-                userId: $user->id,
-                userEmail: $user->email
-            )
-        );
+        $this->events->dispatch(new OrderFulfilled(order: $order, user: $user));
 
         return $order;
     }

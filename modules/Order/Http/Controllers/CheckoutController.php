@@ -45,7 +45,7 @@ class CheckoutController
 
         return response()->json(
             [
-                "order_url" => $order->url(),
+                "order_url" => $order->url,
             ],
             Response::HTTP_CREATED
         );
