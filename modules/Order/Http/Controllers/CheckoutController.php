@@ -5,12 +5,14 @@ namespace Modules\Order\Http\Controllers;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Modules\Order\Actions\PurchaseItems;
+use Modules\Order\DTOs\PendingPayment;
 use Modules\Order\Exceptions\PaymentFailedException;
 use Modules\Order\Http\Requests\CheckoutRequest;
 use Modules\Order\Models\Order;
 use Modules\Payment\PayBuddy;
 use Modules\Product\CartItemCollection;
 use Modules\Product\Warehouse\ProductStockManager;
+use Modules\User\UserDto;
 
 class CheckoutController
 {
@@ -23,14 +25,17 @@ class CheckoutController
         $cartItems = CartItemCollection::fromCheckoutData(
             $request->input("products")
         );
+        $pendingPayment = new PendingPayment(
+            PayBuddy::make(),
+            $request->input("payment_token")
+        );
+        $userDto = UserDto::fromEloquentModel($request->user());
 
         try {
             $order = $this->purchaseItems->handle(
                 items: $cartItems,
-                paymentProvider: PayBuddy::make(),
-                paymentToken: $request->input("payment_token"),
-                userId: $request->user()->id,
-                userEmail: $request->user()->email
+                pendingPayment: $pendingPayment,
+                user: $userDto
             );
         } catch (PaymentFailedException) {
             throw ValidationException::withMessages([

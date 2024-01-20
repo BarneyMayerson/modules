@@ -4,12 +4,13 @@ namespace Modules\Order\Actions;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use Modules\Order\DTOs\PendingPayment;
 use Modules\Order\Events\OrderFulfilled;
 use Modules\Order\Models\Order;
 use Modules\Payment\Actions\CreatePaymentForOrder;
-use Modules\Payment\PayBuddy;
 use Modules\Product\CartItemCollection;
 use Modules\Product\Warehouse\ProductStockManager;
+use Modules\User\UserDto;
 
 class PurchaseItems
 {
@@ -23,27 +24,24 @@ class PurchaseItems
 
     public function handle(
         CartItemCollection $items,
-        PayBuddy $paymentProvider,
-        string $paymentToken,
-        int $userId,
-        string $userEmail
+        PendingPayment $pendingPayment,
+        UserDto $user
     ): Order {
         $order = $this->databaseManager->transaction(function () use (
-            $userId,
-            $items,
-            $paymentProvider,
-            $paymentToken
+            $pendingPayment,
+            $user,
+            $items
         ) {
-            $order = Order::startForUser($userId);
+            $order = Order::startForUser($user->id);
             $order->addLinesFromCartItems($items);
             $order->fulfill();
 
             $this->createPaymentForOrder->handle(
-                $order->id,
-                $userId,
-                $items->totalInCents(),
-                $paymentProvider,
-                $paymentToken
+                orderId: $order->id,
+                userId: $user->id,
+                totalInCents: $items->totalInCents(),
+                payBuddy: $pendingPayment->provider,
+                paymentToken: $pendingPayment->paymentToken
             );
 
             return $order;
@@ -55,8 +53,8 @@ class PurchaseItems
                 totalInCents: $order->total_in_cents,
                 localizedTotal: $order->localizedTotal(),
                 cartItems: $items,
-                userId: $userId,
-                userEmail: $userEmail
+                userId: $user->id,
+                userEmail: $user->email
             )
         );
 
