@@ -38,13 +38,6 @@ class PurchaseItems
             $order->addLinesFromCartItems($items);
             $order->fulfill();
 
-            foreach ($items->items() as $cartItem) {
-                $this->productStockManager->decrement(
-                    $cartItem->product->id,
-                    $cartItem->quantity
-                );
-            }
-
             $this->createPaymentForOrder->handle(
                 $order->id,
                 $userId,
@@ -61,6 +54,7 @@ class PurchaseItems
                 orderId: $order->id,
                 totalInCents: $order->total_in_cents,
                 localizedTotal: $order->localizedTotal(),
+                cartItems: $items,
                 userId: $userId,
                 userEmail: $userEmail
             )
