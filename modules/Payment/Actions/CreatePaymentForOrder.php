@@ -2,7 +2,6 @@
 
 namespace Modules\Payment\Actions;
 
-use Modules\Order\Exceptions\PaymentFailedException;
 use Modules\Payment\Payment;
 use Modules\Payment\PaymentDetails;
 use Modules\Payment\PaymentGateway;
@@ -20,17 +19,13 @@ class CreatePaymentForOrder
         PaymentGateway $paymentGateway,
         string $paymentToken
     ): Payment {
-        try {
-            $charge = $paymentGateway->charge(
-                new PaymentDetails(
-                    token: $paymentToken,
-                    amountInCents: $totalInCents,
-                    statementDescription: "Modularization"
-                )
-            );
-        } catch (RuntimeException) {
-            throw PaymentFailedException::dueToInvalidToken();
-        }
+        $charge = $paymentGateway->charge(
+            new PaymentDetails(
+                token: $paymentToken,
+                amountInCents: $totalInCents,
+                statementDescription: "Modularization"
+            )
+        );
 
         return Payment::query()->create([
             "total_in_cents" => $totalInCents,

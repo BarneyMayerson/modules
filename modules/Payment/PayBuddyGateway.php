@@ -2,19 +2,31 @@
 
 namespace Modules\Payment;
 
+use Modules\Payment\Exceptions\PaymentFailedException;
+use RuntimeException;
+
 class PayBuddyGateway implements PaymentGateway
 {
     public function __construct(protected PayBuddySdk $payBuddySdk)
     {
     }
 
+    /**
+     * @param PaymentDetails $details
+     * @return SuccessfulPayment
+     * @throws PaymentFailedException
+     */
     public function charge(PaymentDetails $details): SuccessfulPayment
     {
-        $charge = $this->payBuddySdk->charge(
-            token: $details->token,
-            amountInCents: $details->amountInCents,
-            statmentDescription: $details->statementDescription
-        );
+        try {
+            $charge = $this->payBuddySdk->charge(
+                token: $details->token,
+                amountInCents: $details->amountInCents,
+                statmentDescription: $details->statementDescription
+            );
+        } catch (RuntimeException $exception) {
+            throw new PaymentFailedException($exception->getMessage());
+        }
 
         return new SuccessfulPayment(
             $charge["id"],

@@ -12,8 +12,6 @@ use Modules\Payment\PaymentProvider;
 use Modules\Product\Database\Factories\ProductFactory;
 
 it("succesfully creates an order", function () {
-    $this->withoutExceptionHandling();
-
     Mail::fake();
 
     $user = UserFactory::new()->create();
