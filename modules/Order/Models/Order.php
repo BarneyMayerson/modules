@@ -13,6 +13,7 @@ use Modules\Order\Models\OrderLine;
 use Modules\Payment\Payment;
 use Modules\Product\CartItem;
 use Modules\Product\CartItemCollection;
+use NumberFormatter;
 
 class Order extends Model
 {
@@ -57,7 +58,12 @@ class Order extends Model
 
     public function localizedTotal(): string
     {
-        return "Total: 12547";
+        $numberFormatter = new NumberFormatter(
+            "en-US",
+            NumberFormatter::CURRENCY
+        );
+
+        return $numberFormatter->format($this->total_in_cents / 100);
     }
 
     /**
