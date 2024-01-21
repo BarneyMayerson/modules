@@ -8,9 +8,12 @@ use Modules\Order\Mails\OrderReceived;
 use Modules\Order\Models\Order;
 use Modules\Payment\PayBuddySdk;
 use Modules\Payment\Payment;
+use Modules\Payment\PaymentProvider;
 use Modules\Product\Database\Factories\ProductFactory;
 
 it("succesfully creates an order", function () {
+    $this->withoutExceptionHandling();
+
     Mail::fake();
 
     $user = UserFactory::new()->create();
@@ -65,7 +68,7 @@ it("succesfully creates an order", function () {
     /** @var Payment $payment */
     $payment = $order->lastPayment;
     $this->assertEquals("paid", $payment->status);
-    $this->assertEquals("PayBuddy", $payment->payment_gateway);
+    $this->assertEquals(PaymentProvider::PayBuddy, $payment->payment_gateway);
     $this->assertEquals(36, strlen($payment->payment_id));
     $this->assertEquals(60000, $payment->total_in_cents);
     $this->assertTrue($payment->user->is($user));

@@ -41,7 +41,7 @@ class PurchaseItems
                 orderId: $order->id,
                 userId: $user->id,
                 totalInCents: $items->totalInCents(),
-                payBuddy: $pendingPayment->provider,
+                paymentGateway: $pendingPayment->provider,
                 paymentToken: $pendingPayment->paymentToken
             );
 
