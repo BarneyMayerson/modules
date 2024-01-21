@@ -8,10 +8,8 @@ use Modules\Order\Actions\PurchaseItems;
 use Modules\Order\DTOs\PendingPayment;
 use Modules\Order\Exceptions\PaymentFailedException;
 use Modules\Order\Http\Requests\CheckoutRequest;
-use Modules\Order\Models\Order;
-use Modules\Payment\PayBuddy;
+use Modules\Payment\PayBuddySdk;
 use Modules\Product\CartItemCollection;
-use Modules\Product\Warehouse\ProductStockManager;
 use Modules\User\UserDto;
 
 class CheckoutController
@@ -26,7 +24,7 @@ class CheckoutController
             $request->input("products")
         );
         $pendingPayment = new PendingPayment(
-            PayBuddy::make(),
+            PayBuddySdk::make(),
             $request->input("payment_token")
         );
         $userDto = UserDto::fromEloquentModel($request->user());

@@ -5,7 +5,7 @@ namespace Modules\Payment;
 use Illuminate\Support\Str;
 use NumberFormatter;
 
-class PayBuddy
+class PayBuddySdk
 {
     public function charge(
         string $token,
@@ -30,7 +30,7 @@ class PayBuddy
         ];
     }
 
-    public static function make(): PayBuddy
+    public static function make(): PayBuddySdk
     {
         return new self();
     }

@@ -6,7 +6,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
 use Modules\Order\Mails\OrderReceived;
 use Modules\Order\Models\Order;
-use Modules\Payment\PayBuddy;
+use Modules\Payment\PayBuddySdk;
 use Modules\Payment\Payment;
 use Modules\Product\Database\Factories\ProductFactory;
 
@@ -32,7 +32,7 @@ it("succesfully creates an order", function () {
             )
         );
 
-    $paymentToken = PayBuddy::validToken();
+    $paymentToken = PayBuddySdk::validToken();
 
     $response = $this->actingAs($user)->post(route("order::checkout"), [
         "payment_token" => $paymentToken,
@@ -90,7 +90,7 @@ it("succesfully creates an order", function () {
 it("fails with an invalid token", function () {
     $user = UserFactory::new()->create();
     $product = ProductFactory::new()->create();
-    $paymentToken = PayBuddy::invalidToken();
+    $paymentToken = PayBuddySdk::invalidToken();
 
     $response = $this->actingAs($user)->postJson(route("order::checkout"), [
         "payment_token" => $paymentToken,
