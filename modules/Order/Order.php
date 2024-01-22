@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Order\OrderMissingOrderLinesException;
 use Modules\Payment\Payment;
 use Modules\Product\CartItem;
-use Modules\Product\CartItemCollection;
+use Modules\Product\Collections\CartItemCollection;
 use NumberFormatter;
 
 class Order extends Model
