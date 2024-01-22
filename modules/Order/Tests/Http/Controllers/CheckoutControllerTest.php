@@ -9,7 +9,7 @@ use Modules\Order\Order;
 use Modules\Payment\PayBuddySdk;
 use Modules\Payment\Payment;
 use Modules\Payment\PaymentProvider;
-use Modules\Product\Database\Factories\ProductFactory;
+use Modules\Product\database\factories\ProductFactory;
 
 it("succesfully creates an order", function () {
     Mail::fake();
