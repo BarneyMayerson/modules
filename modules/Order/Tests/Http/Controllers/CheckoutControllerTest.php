@@ -4,8 +4,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
-use Modules\Order\Mails\OrderReceived;
-use Modules\Order\Models\Order;
+use Modules\Order\Checkout\OrderReceived;
+use Modules\Order\Order;
 use Modules\Payment\PayBuddySdk;
 use Modules\Payment\Payment;
 use Modules\Payment\PaymentProvider;
@@ -72,7 +72,7 @@ it("succesfully creates an order", function () {
     $this->assertTrue($payment->user->is($user));
 
     foreach ($products as $product) {
-        /** @var \Modules\Order\Models\OrderLine $orderLine */
+        /** @var \Modules\Order\OrderLine $orderLine */
         $orderLine = $order->lines->where("product_id", $product->id)->first();
 
         $this->assertEquals(

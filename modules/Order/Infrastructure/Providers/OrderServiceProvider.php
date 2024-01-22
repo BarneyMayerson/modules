@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Order\Providers;
+namespace Modules\Order\Infrastructure\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -15,14 +15,17 @@ class OrderServiceProvider extends ServiceProvider
         $this->app->register(RouteServiceProvider::class);
         $this->app->register(EventServiceProvider::class);
 
-        $this->loadViewsFrom(path: __DIR__ . "/../Views", namespace: "order");
+        $this->loadViewsFrom(
+            path: __DIR__ . "/../../UI/Views",
+            namespace: "order"
+        );
 
         Blade::anonymousComponentPath(
-            path: __DIR__ . "/../Views/components",
+            path: __DIR__ . "/../../UI/Views/components",
             prefix: "order"
         );
         Blade::componentNamespace(
-            namespace: "Modules\\Order\\ViewComponents",
+            namespace: "Modules\\Order\\UI\\ViewComponents",
             prefix: "order"
         );
     }

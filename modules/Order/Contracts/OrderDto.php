@@ -1,9 +1,8 @@
 <?php
 
-namespace Modules\Order\DTOs;
+namespace Modules\Order\Contracts;
 
-use Modules\Order\DTOs;
-use Modules\Order\Models\Order;
+use Modules\Order\Order;
 
 class OrderDto
 {

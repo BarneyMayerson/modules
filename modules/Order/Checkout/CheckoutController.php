@@ -1,12 +1,11 @@
 <?php
 
-namespace Modules\Order\Http\Controllers;
+namespace Modules\Order\Checkout;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
-use Modules\Order\Actions\PurchaseItems;
-use Modules\Order\DTOs\PendingPayment;
-use Modules\Order\Http\Requests\CheckoutRequest;
+use Modules\Order\Contracts\PendingPayment;
 use Modules\Payment\Exceptions\PaymentFailedException;
 use Modules\Payment\PaymentGateway;
 use Modules\Product\CartItemCollection;
@@ -20,7 +19,7 @@ class CheckoutController
     ) {
     }
 
-    public function __invoke(CheckoutRequest $request)
+    public function __invoke(CheckoutRequest $request): JsonResponse
     {
         $cartItems = CartItemCollection::fromCheckoutData(
             $request->input("products")
