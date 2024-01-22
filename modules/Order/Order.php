@@ -84,7 +84,8 @@ class Order extends Model
         }
 
         $this->total_in_cents = $this->lines->sum(
-            fn(OrderLine $line) => $line->product_price_in_cents
+            fn(OrderLine $line) => $line->product_price_in_cents *
+                $line->quantity
         );
     }
 

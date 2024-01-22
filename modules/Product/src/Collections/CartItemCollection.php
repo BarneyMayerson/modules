@@ -16,6 +16,15 @@ class CartItemCollection
     {
     }
 
+    public static function fromProduct(
+        ProductDto $product,
+        int $quantity = 1
+    ): CartItemCollection {
+        $items[] = new CartItem($product, $quantity);
+
+        return new self(collect($items));
+    }
+
     public static function fromCheckoutData(array $data): CartItemCollection
     {
         $cartData = collect($data);
@@ -31,6 +40,8 @@ class CartItemCollection
                 $cartItem["quantity"]
             );
         });
+
+        // dd(new self($cartItems));
 
         return new self($cartItems);
     }
