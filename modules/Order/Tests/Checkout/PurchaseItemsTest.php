@@ -6,6 +6,8 @@ use Modules\Order\Checkout\OrderFulfilled;
 use Modules\Order\Checkout\PurchaseItems;
 use Modules\Order\Contracts\PendingPayment;
 use Modules\Order\Order;
+use Modules\Payment\Actions\CreatePaymentForOrder;
+use Modules\Payment\Actions\CreatePaymentForOrderInMemory;
 use Modules\Payment\Actions\CreatePaymentForOrderInterface;
 use Modules\Payment\Exceptions\PaymentFailedException;
 use Modules\Payment\InMemoryGateway;
@@ -25,6 +27,13 @@ it("creates an order", function () {
         "stock" => 10,
         "price_in_cents" => 1200,
     ]);
+
+    $createPayment = new CreatePaymentForOrderInMemory();
+    $this->app->instance(
+        abstract: CreatePaymentForOrderInterface::class,
+        instance: $createPayment
+    );
+
     $cartItemCollection = CartItemCollection::fromProduct(
         product: ProductDto::fromEloquentModel($product),
         quantity: 2
@@ -42,6 +51,7 @@ it("creates an order", function () {
         pendingPayment: $pendingPayment,
         user: $userDto
     );
+
     $orderLine = $order->lines[0];
 
     $this->assertEquals($product->price_in_cents * 2, $order->totalInCents);
@@ -52,6 +62,10 @@ it("creates an order", function () {
         $orderLine->productPriceInCents
     );
     $this->assertEquals(2, $orderLine->quantity);
+    $this->assertCount(1, $createPayment->payments);
+
+    $payment = $createPayment->payments[0];
+    $this->assertEquals($userDto->id, $payment->user_id);
 
     Event::assertDispatched(OrderFulfilled::class, function (
         OrderFulfilled $event
@@ -66,11 +80,11 @@ it("does not create an order if something fails", function () {
 
     $this->expectException(PaymentFailedException::class);
 
-    $this->mock(
+    $createPayment = new CreatePaymentForOrderInMemory();
+    $createPayment->shouldFail();
+    $this->app->instance(
         abstract: CreatePaymentForOrderInterface::class,
-        mock: function (MockInterface $mock) {
-            $mock->allows("handle")->andThrow(new PaymentFailedException());
-        }
+        instance: $createPayment
     );
 
     $user = User::factory()->create();
@@ -97,6 +111,7 @@ it("does not create an order if something fails", function () {
     } finally {
         $this->assertEquals(0, Order::count());
         $this->assertEquals(0, Payment::count());
+        $this->assertCount(0, $createPayment->payments);
         Event::assertNotDispatched(OrderFulfilled::class);
     }
 });
