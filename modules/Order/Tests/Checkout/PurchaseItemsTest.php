@@ -6,7 +6,7 @@ use Modules\Order\Checkout\OrderFulfilled;
 use Modules\Order\Checkout\PurchaseItems;
 use Modules\Order\Contracts\PendingPayment;
 use Modules\Order\Order;
-use Modules\Payment\Actions\CreatePaymentForOrder;
+use Modules\Payment\Actions\CreatePaymentForOrderInterface;
 use Modules\Payment\Exceptions\PaymentFailedException;
 use Modules\Payment\InMemoryGateway;
 use Modules\Payment\PayBuddySdk;
@@ -67,7 +67,7 @@ it("does not create an order if something fails", function () {
     $this->expectException(PaymentFailedException::class);
 
     $this->mock(
-        abstract: CreatePaymentForOrder::class,
+        abstract: CreatePaymentForOrderInterface::class,
         mock: function (MockInterface $mock) {
             $mock->allows("handle")->andThrow(new PaymentFailedException());
         }
