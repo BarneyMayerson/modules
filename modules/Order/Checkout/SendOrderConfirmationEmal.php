@@ -9,8 +9,6 @@ class SendOrderConfirmationEmal
 {
     public function handle(OrderFulfilled $event): void
     {
-        Mail::to($event->user->email)->send(
-            new OrderReceived($event->order->localizedTotal)
-        );
+        Mail::to($event->user->email)->send(new OrderReceived($event->order));
     }
 }
