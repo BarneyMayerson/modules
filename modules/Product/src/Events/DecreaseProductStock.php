@@ -2,7 +2,7 @@
 
 namespace Modules\Product\Events;
 
-use Modules\Order\Checkout\OrderFulfilled;
+use Modules\Payment\PaymentSucceeded;
 use Modules\Product\Warehouse\ProductStockManager;
 
 class DecreaseProductStock
@@ -12,7 +12,7 @@ class DecreaseProductStock
     ) {
     }
 
-    public function handle(OrderFulfilled $event): void
+    public function handle(PaymentSucceeded $event): void
     {
         foreach ($event->order->lines as $orderLine) {
             $this->productStockManager->decrement(

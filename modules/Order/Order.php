@@ -19,7 +19,9 @@ class Order extends Model
     use HasFactory;
 
     public const COMPLETED = "completed";
+    public const PAYMENT_FAILED = "payment failed";
     public const PENDING = "pending";
+    public const STARTED = "started";
 
     protected $guarded = [];
 
@@ -65,9 +67,32 @@ class Order extends Model
         return $numberFormatter->format($this->total_in_cents / 100);
     }
 
+    public function isCompleted(): bool
+    {
+        return $this->status === self::COMPLETED;
+    }
+
+    public function complete(): void
+    {
+        $this->status = self::COMPLETED;
+
+        $this->save();
+    }
+
+    public function markAsFailed(): void
+    {
+        if ($this->isCompleted()) {
+            throw new \RuntimeException(
+                "A completed order cannot be marked as failed."
+            );
+        }
+
+        $this->status = self::PAYMENT_FAILED;
+
+        $this->save();
+    }
+
     /**
-     * Undocumented function
-     *
      * @param CartItemCollection<CartItem> $items
      * @return void
      */
@@ -87,6 +112,21 @@ class Order extends Model
             fn(OrderLine $line) => $line->product_price_in_cents *
                 $line->quantity
         );
+    }
+
+    /**
+     * @throws \Modules\Order\Exceptions\OrderMissingOrderLinesException
+     */
+    public function start(): void
+    {
+        if ($this->lines->isEmpty()) {
+            throw new OrderMissingOrderLinesException();
+        }
+
+        $this->status = self::PENDING;
+
+        $this->save();
+        $this->lines()->saveMany($this->lines);
     }
 
     /**
