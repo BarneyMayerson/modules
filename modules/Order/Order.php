@@ -59,12 +59,10 @@ class Order extends Model
 
     public function localizedTotal(): string
     {
-        $numberFormatter = new NumberFormatter(
+        return (new NumberFormatter(
             "en-US",
             NumberFormatter::CURRENCY
-        );
-
-        return $numberFormatter->format($this->total_in_cents / 100);
+        ))->formatCurrency($this->total_in_cents / 100, "USD");
     }
 
     public function isCompleted(): bool
@@ -92,9 +90,19 @@ class Order extends Model
         $this->save();
     }
 
+    public function addLines(array $lines): void
+    {
+        foreach ($lines as $line) {
+            $this->lines->push($line);
+        }
+
+        $this->total_in_cents = $this->lines->sum(
+            fn(OrderLine $line) => $line->total()
+        );
+    }
+
     /**
      * @param CartItemCollection<CartItem> $items
-     * @return void
      */
     public function addLinesFromCartItems(CartItemCollection $items): void
     {

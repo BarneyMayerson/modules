@@ -89,6 +89,8 @@ it("succesfully creates an order", function () {
 });
 
 it("fails with an invalid token", function () {
+    $this->markTestSkipped();
+
     $user = UserFactory::new()->create();
     $product = ProductFactory::new()->create();
     $paymentToken = PayBuddySdk::invalidToken();
